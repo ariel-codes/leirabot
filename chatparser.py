@@ -34,6 +34,14 @@ def readchats(folder="./training_data/"):
     if "digest.json" in filenames:
         filenames.remove("digest.json")
 
+    def msg_filter(line):
+        """Define your keywords for filtering here"""
+        if "<Media omitted>" in line:
+            return True
+        if line is ".":
+            return True
+        return False
+
     def parseconversation(fname):
         """Parses .txt files as WhatsApp conversations"""
         statements = ["none"]
@@ -46,12 +54,12 @@ def readchats(folder="./training_data/"):
                 if "Messages to this chat and calls are now secured with end-to-end encryption." in line:
                     continue
                 er = header.match(line)
-                # Mensagem multilinha
-                if er is None:
-                    statements[-1] += line.lower()
-                # Msg não é texto, ignora
-                elif "<Media omitted>" in line:
+                # Filter meaningless messages
+                if msg_filter(line) is True:
                     continue
+                # Mensagem multilinha
+                elif er is None:
+                    statements[-1] += line.lower()
                 # Multiplas msg, mesma pessoa
                 elif er.group(1) == interloper:
                     statements[-1] += header.sub('', line).lower()

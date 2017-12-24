@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 """Dumb chatbot trained on WhatsApp conversations"""
 import logging
-from chatterbot import ChatBot
+import os
+import time
+
+from chatterbot import ChatBot, utils
 
 from trainer import trainbot
 
+
+def clear():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 # logging.basicConfig(level=logging.INFO)
+
 
 LEIRA = ChatBot(
     'Leira',
@@ -19,7 +27,7 @@ LEIRA = ChatBot(
         },
         {
             'import_path': 'chatterbot.logic.LowConfidenceAdapter',
-            'threshold': 0.25,
+            'threshold': 0.50,
             'default_response': 'wat tendi nada'
         }
     ],
@@ -29,10 +37,16 @@ LEIRA = ChatBot(
 )
 trainbot(LEIRA)
 
+clear()
 print("Bot operational, type away!")
+time.sleep(2)
+
 while True:
     try:
         bot_input = LEIRA.get_response(None)
     except(KeyboardInterrupt, EOFError, SystemExit):
         break
+
+clear()
 print("Goodbye human o.o")
+time.sleep(2)
