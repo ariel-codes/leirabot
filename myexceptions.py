@@ -25,5 +25,5 @@ class ParseError(BotError):
         super(ParseError, self).__init__(
             msg="Error parsing file %s at line %d" % (fname, line)
         )
-        self.filename = file
+        self.filename = fname
         self.line = line

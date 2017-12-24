@@ -36,23 +36,37 @@ def readchats(folder="./training_data/"):
 
     def parseconversation(fname):
         """Parses .txt files as WhatsApp conversations"""
-        statements = []
+        statements = ["none"]
+        interloper = "none"
         header = re.compile(
-            r'(\d{1,2}\/\d{1,2}\/\d{1,2}, \d?\d:\d?\d - .+?: )')
+            r'\d{1,2}\/\d{1,2}\/\d{1,2}, \d?\d:\d?\d - (.+?): ')
         try:
             conv = open(folder + fname)
             for line in conv:
-                if "<Media omitted>" in line or "Messages to this chat and calls are now secured with end-to-end encryption." in line:
+                if "Messages to this chat and calls are now secured with end-to-end encryption." in line:
                     continue
-                if header.match(line) is not None:
-                    statements.append(header.sub('', line))
+                er = header.match(line)
+                # Mensagem multilinha
+                if er is None:
+                    statements[-1] += line.lower()
+                # Msg não é texto, ignora
+                elif "<Media omitted>" in line:
+                    continue
+                # Multiplas msg, mesma pessoa
+                elif er.group(1) == interloper:
+                    statements[-1] += header.sub('', line).lower()
+                # Mudança de locutor
                 else:
-                    statements[-1] += line
-        except Exception:
-            raise ParseError
+                    # Cortar o '\n' do final da ultima msg
+                    statements[-1] = statements[-1][:-1]
+                    interloper = er.group(1)
+                    statements.append(header.sub('', line).lower())
+        except Exception as ex:
+            print(ex)
+            raise ParseError(None, fname, 42)
         finally:
             conv.close()
-        return statements
+        return statements[1:]
 
     def gethash(fname):
         """Generates MD5 hash digest for a file"""
@@ -96,3 +110,6 @@ def readchats(folder="./training_data/"):
     with open(folder + "digest.json", 'w') as f:
         json.dump(dig.__dict__, f)
     return dig.conversations
+
+
+readchats()
